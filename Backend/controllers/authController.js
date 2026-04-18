@@ -1,0 +1,96 @@
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import userModel from '../models/userModel.js';
+
+export const register = async (req, res) => {
+    const {name, email, password} = req.body;
+    if(!name || !email || !password) {
+        return res.json({success: false, message: "Missing details"});
+    }
+
+    try {
+
+        const existingUser = await userModel.findOne({email});
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        if(existingUser){
+            if(existingUser.isAccountVerified) return res.json({success: false, message: "User already Exists"})
+            
+            existingUser.password = hashedPassword;
+            existingUser.name = name;
+            await existingUser.save();
+
+            const token = jwt.sign({id: existingUser._id}, process.env.JWT_SECRET_KEY, {expiresIn: '7d'});
+            res.cookie("token", token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+                maxAge: 7 * 24 * 60 * 60 * 1000
+            })
+            return res.json({success: true, message: 'Account Registed'})
+                    
+        }
+
+        const user = new userModel({name, email, password: hashedPassword});
+        await user.save();
+
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET_KEY, {expiresIn: '7d'})
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+        return res.json({success: true, message: 'Account Registed'})
+
+    } catch (error){
+        res.json({success: false, message: error.message})
+    }
+}
+
+export const login = async (req, res) => {
+
+    const {email, password} = req.body;
+
+    if(!email || !password) return res.json({success: false, message: "Missing details"});
+
+    try {
+        const user = await userModel.findOne({email});
+
+        if(!user || user && !user.isAccountVerified){
+            return res.json({success: false, message: "No Such User Exist"})
+            
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password)
+
+        if(!isMatch){
+            res.json({success: false, message: 'Invalid password'})
+        }
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET_KEY, {expiresIn: '7d'})
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+        return res.json({success: true, message: 'Account Logged In'})
+
+    } catch (error) {
+        res.json({success: false, message: error.message})        
+    }
+}
+
+export const logout = async (req, res) => {
+    try {
+        return res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        }).json({success: true, message: 'logged Out'})
+    } catch (error) {
+        return res.json({ success: false, message: error.message })
+    }
+}
