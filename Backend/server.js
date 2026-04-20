@@ -6,6 +6,7 @@ import connectDB from './config/mongodb.js'
 import authRouter from './Routes/authRoutes.js'
 
 import dns from "dns";
+import userRouter from './Routes/userRoutes.js'
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const app = express();
@@ -19,5 +20,6 @@ app.use(cookieParser())
 
 app.get('/', (req, res) => res.send('Backed is working'))
 app.use('/api/auth', authRouter)
+app.use('/api/user', userRouter)
 
 app.listen(port, () => console.log(`server is running on port ${port}`));
