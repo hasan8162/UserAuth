@@ -21,7 +21,7 @@ export const register = async (req, res) => {
             existingUser.name = name;
             await existingUser.save();
 
-            const token = jwt.sign({id: existingUser._id}, process.env.JWT_SECRET_KEY, {expiresIn: '7d'});
+            const token = jwt.sign({id: existingUser._id, isAccountVerified: existingUser.isAccountVerified}, process.env.JWT_SECRET_KEY, {expiresIn: '7d'});
             res.cookie("token", token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
@@ -35,7 +35,7 @@ export const register = async (req, res) => {
         const user = new userModel({name, email, password: hashedPassword});
         await user.save();
 
-        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET_KEY, {expiresIn: '7d'})
+        const token = jwt.sign({id: user._id, isAccountVerified: user.isAccountVerified}, process.env.JWT_SECRET_KEY, {expiresIn: '7d'})
 
         res.cookie("token", token, {
             httpOnly: true,
@@ -69,7 +69,7 @@ export const login = async (req, res) => {
         if(!isMatch){
             res.json({success: false, message: 'Invalid password'})
         }
-        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET_KEY, {expiresIn: '7d'})
+        const token = jwt.sign({id: user._id, isAccountVerified: user.isAccountVerified}, process.env.JWT_SECRET_KEY, {expiresIn: '7d'})
         res.cookie("token", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -169,7 +169,7 @@ export const sendResetOtp = async (req, res) => {
     try {
         
         const user = await userModel.findOne({email});
-        if(!user){
+        if(!user || user && !user.isAccountVerified){
             return res.json({ success: false, message: 'User not found' });
         }
 
