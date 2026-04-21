@@ -120,7 +120,7 @@ export const sendVerifyOtp = async (req, res) => {
             text: `Your OTP is ${otp}. Verify your account using this OTP expires in 5 minutes.`
         }
         await transporter.sendMail(mailOption);
-        res.json({success: true, message: 'Varification OTP Send'})
+        return res.json({success: true, message: 'Varification OTP Send'})
 
     } catch (error) {
         res.json({success: false, message: error.message})
@@ -186,7 +186,7 @@ export const sendResetOtp = async (req, res) => {
             text: `Your OTP for reseting your password is ${otp}. Use this OTP to reset your password expires in 5 minutes.`
         }
         await transporter.sendMail(mailOption);
-        res.json({success: true, message: 'Reset Password OTP Send'})
+        return res.json({success: true, message: 'Reset Password OTP Send'})
 
     } catch (error) {
         return res.json({ success: false, message: error.message })

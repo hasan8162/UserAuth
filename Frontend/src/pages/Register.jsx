@@ -19,7 +19,10 @@ const Register = () => {
             const {data} = await axios.post(backendUrl + '/api/auth/register', {name, email, password});
             
             if(data.success){
-                    navigate('/register/verify-email');
+                    const verifyData = await axios.post(backendUrl + '/api/auth/send-verify-otp'); 
+                    if(verifyData.data.success)                   
+                        navigate('/register/verify-email');
+                    else toast.error(verifyData.data.message);
             } else {
                 toast.error(data.message);
             }
