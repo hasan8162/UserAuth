@@ -9,7 +9,6 @@ const VerifyEmail = () => {
   const { backendUrl, navigate } = useAppContext();
   const onCompleteHandler = async (otp) => {
       const {data} = await axios.post(backendUrl + '/api/auth/verify-account', {otp}, {withCredentials: true});
-
       if(data.success) {
         toast.success('User Registered successfully');
         navigate('/login');

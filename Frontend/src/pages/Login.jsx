@@ -49,7 +49,7 @@ const Login = () => {
                     <input id="checkbox" type="checkbox" />
                     <label htmlFor="checkbox">Remember me</label>
                 </div>
-                <a className="text-blue-600 underline" href="#">Forgot Password</a>
+                <NavLink className="text-blue-600 underline" to='/password-reset'>Forgot Password</NavLink>
             </div>
             <button type="submit" className="w-full mb-3 bg-indigo-500 hover:bg-indigo-600/90 transition py-2.5 rounded text-white font-medium">Log In</button>
             <p className="text-center mt-4">Don't have an account ? <NavLink to='/register' className="text-blue-500 underline">Signup</NavLink></p>
